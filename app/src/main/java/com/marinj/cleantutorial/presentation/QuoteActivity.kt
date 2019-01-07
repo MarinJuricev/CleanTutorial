@@ -18,7 +18,7 @@ class QuoteActivity : AppCompatActivity() {
 
         quoteViewModel = ViewModelProviders.of(this).get(QuoteViewModel::class.java)
         quoteViewModel.randomQuote.observe(this, Observer{
-            Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
+            Toast.makeText(baseContext, "${it.quote} by ${it.author}", Toast.LENGTH_SHORT).show()
         })
 
         setupButtonListener()

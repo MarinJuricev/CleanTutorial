@@ -1,9 +1,6 @@
 package com.marinj.cleantutorial.core
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 /**
  * Abstract class for a Use Case (Interactor in terms of Clean Architecture).
@@ -15,11 +12,20 @@ import kotlinx.coroutines.launch
  */
 abstract class UseCase<out Type, in Params> where Type : Any {
 
+    private val job = Job()
+    private val useCaseScope = CoroutineScope(Dispatchers.Main + job)
+
     abstract suspend fun run(params: Params): Either<Failure, Type>
 
     operator fun invoke(params: Params, onResult: (Either<Failure, Type>) -> Unit = {}) {
-        val job = GlobalScope.async(Dispatchers.Default) { run(params) }
-        GlobalScope.launch(Dispatchers.Main) { onResult(job.await()) }
+        useCaseScope.launch {
+            val job = async(Dispatchers.Default) { run(params) }
+            onResult(job.await())
+        }
+    }
+
+    fun cancel() {
+        job.cancel()
     }
 }
 
